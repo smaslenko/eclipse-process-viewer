@@ -5,13 +5,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import javax.swing.plaf.TableHeaderUI;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -20,6 +19,8 @@ import org.eclipse.ui.part.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.jface.action.*;
@@ -36,6 +37,7 @@ public class ProcessView extends ViewPart {
 	private TableViewer viewer;
 	private Action killAction;
 	private MouseEvent lastEvent;
+	private ProcessesTableComparator comparator;
 	
 	private ArrayList<ProcessInfo> processList;
 	private int totalCpu = 0;
@@ -43,10 +45,10 @@ public class ProcessView extends ViewPart {
 
 	class ProcessInfo{
 		public String name;
-		public String memory;
+		public double memory;
 		public int cpu;
 		public int pid;
-		public ProcessInfo(String name, String memory, int cpu, int pid){
+		public ProcessInfo(String name, double memory, int cpu, int pid){
 			this.name = name;
 			this.memory = memory;
 			this.cpu = cpu;
@@ -84,7 +86,7 @@ public class ProcessView extends ViewPart {
 				result = process.name;
 				break;
 			case 1:
-				result = process.memory;
+				result = process.memory + " K";
 				break;
 			case 2:
 				if( 0 == totalCpu ){
@@ -119,23 +121,9 @@ public class ProcessView extends ViewPart {
 	        	if( 8 <= task.length ){
 	        		int cpu = cpuTimeToInt(task[7]);
 	        		totalCpu += cpu;
-	        		processList.add( new ProcessInfo( task[0], task[4], cpu, Integer.parseInt(task[1]) ) );
+	        		processList.add( new ProcessInfo( task[0], cpuMemoryToDouble(task[4]), cpu, Integer.parseInt(task[1]) ) );
 	        	}
 	        }
-	        
-	        Collections.sort(processList, new Comparator<ProcessInfo>() {
-
-				@Override
-				public int compare(ProcessInfo o1, ProcessInfo o2) {
-					if( o1.cpu < o2.cpu )
-						return 1;
-					else if( o1.cpu > o2.cpu )
-						return -1;
-					else
-						return 0;
-				}
-	        	
-			});
 	        input.close();
 	    } catch (Exception err) {
 	        err.printStackTrace();
@@ -159,31 +147,64 @@ public class ProcessView extends ViewPart {
 		
 		return result;
 	}
+	
+	private double cpuMemoryToDouble(String memoryOrig) {
+		String memory = memoryOrig.substring(0, memoryOrig.indexOf(" ")); // get rid of ' K' at the end
+		NumberFormat format = NumberFormat.getInstance(Locale.getDefault());
+	    Number number;
+		try {
+			number = format.parse(memory);
+			return number.doubleValue();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		return 0;
+	}
 
 	public void createPartControl(Composite parent) {
 		viewer = new TableViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 		viewer.setContentProvider(new ViewContentProvider());
 		viewer.setLabelProvider(new ViewLabelProvider());
 		viewer.setInput(getViewSite());
-		
 		viewer.getTable().setHeaderVisible(true);
+		
+		comparator = new ProcessesTableComparator();
+		viewer.setComparator(comparator);
 		
 		TableColumn columnName = new TableColumn(viewer.getTable(), SWT.LEFT);
 		columnName.setText("Process name");
 		columnName.setWidth(200);
+		columnName.addSelectionListener(getSelectionAdapter(columnName, 0));
 		
 		TableColumn columnMemory = new TableColumn(viewer.getTable(), SWT.LEFT);
 		columnMemory.setText("Memory");
 		columnMemory.setWidth(125);
+		columnMemory.addSelectionListener(getSelectionAdapter(columnMemory, 1));
 		
 		TableColumn columnCpu = new TableColumn(viewer.getTable(), SWT.LEFT);
 		columnCpu.setText("CPU");
 		columnCpu.setWidth(125);
+		columnCpu.addSelectionListener(getSelectionAdapter(columnCpu, 2));
 
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(viewer.getControl(), "ProcessViewer.viewer");
 		createActions();
 		hookContextMenu();
 	}
+	
+	 private SelectionAdapter getSelectionAdapter(final TableColumn column,
+		      final int index) {
+		    SelectionAdapter selectionAdapter = new SelectionAdapter() {
+		      @Override
+		      public void widgetSelected(SelectionEvent e) {
+		        comparator.setColumn(index);
+		        int dir = comparator.getDirection();
+		        viewer.getTable().setSortDirection(dir);
+		        viewer.getTable().setSortColumn(column);
+		        viewer.refresh();
+		      }
+		    };
+		    return selectionAdapter;
+		  }
 
 	private void hookContextMenu() {
 		MenuManager menuManager = new MenuManager("#PopupMenu");
