@@ -43,10 +43,12 @@ public class ProcessView extends ViewPart {
 
 	class ProcessInfo{
 		public String name;
+		public String memory;
 		public int cpu;
 		public int pid;
-		public ProcessInfo(String name, int cpu, int pid){
+		public ProcessInfo(String name, String memory, int cpu, int pid){
 			this.name = name;
+			this.memory = memory;
 			this.cpu = cpu;
 			this.pid = pid;
 		}
@@ -77,16 +79,21 @@ public class ProcessView extends ViewPart {
 			ProcessInfo process = (ProcessInfo) obj;
 			String result = "";
 			
-			if( 0 == index ){
+			switch (index) {
+			case 0:
 				result = process.name;
-			} else if ( 1 == index ) {
+				break;
+			case 1:
+				result = process.memory;
+				break;
+			case 2:
 				if( 0 == totalCpu ){
 					result = "0.00%";
 				} else {
 					result = new DecimalFormat("#.##").format(1.0 * process.cpu * 100 / totalCpu) + "%";
 				}
+				break;
 			}
-			
 			return result;
 		}
 		public Image getColumnImage(Object obj, int index) {
@@ -108,10 +115,11 @@ public class ProcessView extends ViewPart {
 	        	
 	        	// [0] process name
 	        	// [7] cpu time in hh:mm:ss format
+	        	// [4] memory used
 	        	if( 8 <= task.length ){
 	        		int cpu = cpuTimeToInt(task[7]);
 	        		totalCpu += cpu;
-	        		processList.add( new ProcessInfo( task[0], cpu, Integer.parseInt(task[1]) ) );
+	        		processList.add( new ProcessInfo( task[0], task[4], cpu, Integer.parseInt(task[1]) ) );
 	        	}
 	        }
 	        
@@ -163,6 +171,11 @@ public class ProcessView extends ViewPart {
 		TableColumn columnName = new TableColumn(viewer.getTable(), SWT.LEFT);
 		columnName.setText("Process name");
 		columnName.setWidth(200);
+		
+		TableColumn columnMemory = new TableColumn(viewer.getTable(), SWT.LEFT);
+		columnMemory.setText("Memory");
+		columnMemory.setWidth(125);
+		
 		TableColumn columnCpu = new TableColumn(viewer.getTable(), SWT.LEFT);
 		columnCpu.setText("CPU");
 		columnCpu.setWidth(125);
