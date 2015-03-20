@@ -69,3 +69,6 @@ local.properties
  
 # PDT-specific
 .buildpath
+
+# Project specific
+/libs/jfreechart-1.0.19-fx-javadocs/
