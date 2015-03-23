@@ -73,7 +73,7 @@ public class ProcessView extends ViewPart {
 			public void run() {
 				updateProcessList();
 			}
-		}, 1000, 5000);
+		}, 1000, 1000);
 	}
 
 	class ViewContentProvider implements IStructuredContentProvider {
