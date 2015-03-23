@@ -5,7 +5,7 @@
    <extension
          point="org.eclipse.ui.views">
       <category
-            name="ProcessViewer"
+            name="Category"
             id="ProcessViewer">
       </category>
       <view
@@ -15,13 +15,6 @@
             class="processviewer.views.ProcessView"
             id="processviewer.views.ProcessView">
       </view>
-      <!--view
-            category="ProcessViewer"
-            class="processviewer.views.ChartAllProcessesView"
-            icon="icons/sample.gif"
-            id="ProcessViewer.view1"
-            name="All Processes">
-      </view-->
    </extension>
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
