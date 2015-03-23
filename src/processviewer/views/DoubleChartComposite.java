@@ -11,6 +11,8 @@ import org.eclipse.swt.widgets.Display;
 import org.swtchart.Chart;
 import org.swtchart.IAxisTick;
 import org.swtchart.IGrid;
+import org.swtchart.ILineSeries;
+import org.swtchart.ISeries.SeriesType;
 import org.swtchart.internal.axis.AxisSet;
 
 import processviewer.views.ProcessView.ProcessInfo;
@@ -83,9 +85,22 @@ public class DoubleChartComposite extends Composite {
 		set.getYAxis(0).getTitle().setVisible(false);
 	}
 
+	
+	
+	
 	public void updateProcessList(ArrayList<ProcessInfo> processList) {
 		this.processList = processList;
 		
+		
+		 ILineSeries lineSeries1 = (ILineSeries) cpuChart.getSeriesSet()
+	                .createSeries(SeriesType.LINE, "line series 1");
+		 
+//	        lineSeries1.setYSeries();
+		 
+	        lineSeries1.setLineColor(Display.getDefault().getSystemColor(
+	                SWT.COLOR_RED));
+	        lineSeries1.enableArea(true);
+	        	        
 		switch (type) {
 		case ALL:
 			
@@ -96,6 +111,13 @@ public class DoubleChartComposite extends Composite {
 		default:
 			break;
 		}
-
+	}
+	
+	private class collectingThread extends Thread {
+		
+		
+		public void run() {
+			
+		}
 	}
 }
