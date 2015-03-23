@@ -85,6 +85,17 @@ public class DoubleChartComposite extends Composite {
 
 	public void updateProcessList(ArrayList<ProcessInfo> processList) {
 		this.processList = processList;
+		
+		switch (type) {
+		case ALL:
+			
+			break;
+		case SINGLE:
+			
+			break;
+		default:
+			break;
+		}
 
 	}
 }
