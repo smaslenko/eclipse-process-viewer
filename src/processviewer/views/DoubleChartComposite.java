@@ -37,9 +37,13 @@ public class DoubleChartComposite extends Composite {
 	private Chart memoryChart;
 	private Chart cpuChart;
 	private int index;
+	private int indexSingle;
 	private ArrayList<ProcessInfo> processList;
+	private ProcessInfo currentProcess;
 	private double[] cpuHistory;
 	private double[] memoryHistory;
+	private double[] cpuHistorySingle;
+	private double[] memoryHistorySingle;
 
 	private ChartType type;
 
@@ -66,6 +70,8 @@ public class DoubleChartComposite extends Composite {
 
 		cpuHistory = new double[HISTORY_SIZE];
 		memoryHistory = new double[HISTORY_SIZE];
+		cpuHistorySingle = new double[HISTORY_SIZE];
+		memoryHistorySingle = new double[HISTORY_SIZE];
 		// for (int i = 0; i < HISTORY_SIZE; i++) {
 		// processHistory[i] = -1;
 		// }
@@ -120,8 +126,11 @@ public class DoubleChartComposite extends Composite {
 
 		IAxisTick xTick = set.getXAxis(0).getTick();
 		xTick.setVisible(false);
+		xTick.setTickMarkStepHint(25);
+		
 		IAxisTick yTick = set.getYAxis(0).getTick();
 		yTick.setVisible(false);
+		yTick.setTickMarkStepHint(20);
 
 		IGrid xGrid = set.getXAxis(0).getGrid();
 		IGrid yGrid = set.getYAxis(0).getGrid();
@@ -131,6 +140,9 @@ public class DoubleChartComposite extends Composite {
 
 		set.getXAxis(0).getTitle().setVisible(false);
 		set.getYAxis(0).getTitle().setVisible(false);
+		
+//		chart.getAxisSet().getXAxis(0).getTitle().setText("Time (10 seconds)");
+//		chart.getAxisSet().getYAxis(0).getTitle().setText("Percent");
 	}
 
 	public void updateProcessList(ArrayList<ProcessInfo> processList) {
@@ -144,7 +156,7 @@ public class DoubleChartComposite extends Composite {
 		}
 		
 		if (index < HISTORY_SIZE) {
-			cpuHistory[index] =getProcessCpuLoad();
+			cpuHistory[index] = getProcessCpuLoad();
 			memoryHistory[index] = memoryLoad;
 			index++;
 
@@ -170,9 +182,9 @@ public class DoubleChartComposite extends Composite {
 
 		System.out.println();
 
-		for (int i = 0; i < HISTORY_SIZE; i++) {
-			System.out.println("cpu load = " + cpuHistory[i]);
-		}
+//		for (int i = 0; i < HISTORY_SIZE; i++) {
+//			System.out.println("cpu load = " + cpuHistory[i]);
+//		}
 
 		System.out.println();
 
@@ -187,12 +199,65 @@ public class DoubleChartComposite extends Composite {
 			break;
 		}
 	}
+	
+	public void updateProcessList(ProcessInfo process) {
+		this.currentProcess = process;
+	
+		if (indexSingle < HISTORY_SIZE) {
+			cpuHistorySingle[indexSingle] = 1.0 * process.cpu* 100 /ProcessView.totalCpu;
+			memoryHistorySingle[indexSingle] = currentProcess.memory;
+			indexSingle++;
+
+		} else {
+			for (int i = 0; i < HISTORY_SIZE - 1; i++) {
+				cpuHistorySingle[i] = cpuHistorySingle[i + 1];
+				memoryHistorySingle[i] = memoryHistorySingle[i + 1];
+			}
+			cpuHistorySingle[HISTORY_SIZE - 1] = 1.0 * process.cpu* 100 /ProcessView.totalCpu;
+			memoryHistorySingle[HISTORY_SIZE - 1] = process.memory;
+		}
+
+		String cpuSeriesId = "cpu load";
+		String memorySeriesId = "memory load";
+
+		if (indexSingle == 1) {
+			setupLines(cpuSeriesId, memorySeriesId);
+		}
+		resetSeries(cpuSeriesId, memorySeriesId);
+		setupLines(cpuSeriesId, memorySeriesId);
+
+		System.out.println("CPU Single process : "  + this.currentProcess.name);
+		System.out.println("-------------------------------------");
+		for (int i = 0; i < HISTORY_SIZE; i++) {
+			System.out.println("cpu load = " + cpuHistorySingle[i]);
+		}
+		
+		System.out.println("MEMORY Single process : "  + this.currentProcess.name);
+		
+		for (int i = 0; i < HISTORY_SIZE; i++) {
+			System.out.println("memory load = " + memoryHistorySingle[i]);
+		}
+		System.out.println("-------------------------------------");
+	}
+	
+	public void resetProcess(){
+		indexSingle = 0;
+		for (int i = 0; i < HISTORY_SIZE ; i++) {
+			cpuHistorySingle[i] = 0;
+			memoryHistorySingle[i] = 0;
+		}
+	}
 
 	private void setupLines(String cpuId, String memoryId) {
 
 		ILineSeries lineSeries1 = (ILineSeries) cpuChart.getSeriesSet()
 				.createSeries(SeriesType.LINE, cpuId);
-		lineSeries1.setYSeries(cpuHistory);
+		if(type == ChartType.SINGLE){
+			lineSeries1.setYSeries(cpuHistorySingle);
+		}else{
+			lineSeries1.setYSeries(cpuHistory);	
+		}
+		
 		lineSeries1.setLineColor(Display.getDefault().getSystemColor(
 				SWT.COLOR_RED));
 		lineSeries1.enableArea(true);
@@ -200,7 +265,12 @@ public class DoubleChartComposite extends Composite {
 
 		ILineSeries lineSeries2 = (ILineSeries) memoryChart.getSeriesSet()
 				.createSeries(SeriesType.LINE, memoryId);
-		lineSeries2.setYSeries(memoryHistory);
+		if(type == ChartType.SINGLE){
+			lineSeries2.setYSeries(memoryHistorySingle);
+		}else{
+			lineSeries2.setYSeries(memoryHistory);
+		}
+		
 		lineSeries2.setLineColor(Display.getDefault().getSystemColor(
 				SWT.COLOR_RED));
 		lineSeries2.enableArea(true);
@@ -214,4 +284,5 @@ public class DoubleChartComposite extends Composite {
 		cpuChart.getSeriesSet().deleteSeries(cpuId);
 		memoryChart.getSeriesSet().deleteSeries(memoryId);
 	}
+
 }
