@@ -12,6 +12,8 @@ import javax.management.ReflectionException;
 
 public class SystemUtils {
 
+	
+	
 	public static double getProcessCpuLoad() {
 		AttributeList list = null;
 		Double value = 0.0;
@@ -37,6 +39,11 @@ public class SystemUtils {
 
 		return ((int) (value * 1000) / 10.0); // returns a percentage value with
 												// 1 decimal point precision
+	}
+	
+	public static double getProcessCpuLoad2() {
+		com.sun.management.OperatingSystemMXBean bean = (com.sun.management.OperatingSystemMXBean) java.lang.management.ManagementFactory.getOperatingSystemMXBean();
+		return round(bean.getSystemCpuLoad(), 2);
 	}
 
 	// RESTRICTED method. Follow this link to solve trouble
