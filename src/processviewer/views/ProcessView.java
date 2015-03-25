@@ -95,7 +95,7 @@ public class ProcessView extends ViewPart {
 	}
 
 	class ViewLabelProvider extends LabelProvider implements
-	ITableLabelProvider {
+			ITableLabelProvider {
 		@Override
 		public String getColumnText(Object obj, int index) {
 			ProcessInfo process = (ProcessInfo) obj;
@@ -131,7 +131,7 @@ public class ProcessView extends ViewPart {
 		try {
 			Process process = Runtime.getRuntime().exec(
 					System.getenv("windir")
-					+ "\\system32\\tasklist.exe /NH /V /FO csv");
+							+ "\\system32\\tasklist.exe /NH /V /FO csv");
 			BufferedReader input = new BufferedReader(new InputStreamReader(
 					process.getInputStream()));
 			processList.removeAll(processList);
@@ -150,7 +150,7 @@ public class ProcessView extends ViewPart {
 					totalCpu += cpu;
 					processList.add(new ProcessInfo(task[0],
 							cpuMemoryToDouble(task[4]), cpu, Integer
-							.parseInt(task[1])));
+									.parseInt(task[1])));
 				}
 			}
 			input.close();
@@ -162,8 +162,8 @@ public class ProcessView extends ViewPart {
 			@Override
 			public void run() {
 				tableViewer.refresh();
-				chartsPanel.updateProcessList(processList);
-				if(currentProcess != null){
+				chartsPanel.updateProcessList();
+				if (currentProcess != null) {
 					chartsPanel.updateCurrentProcess(currentProcess);
 				}
 			}
@@ -234,22 +234,26 @@ public class ProcessView extends ViewPart {
 		columnCpu.addSelectionListener(getSelectionAdapter(columnCpu, 2));
 
 		PlatformUI.getWorkbench().getHelpSystem()
-		.setHelp(tableViewer.getControl(), "ProcessViewer.viewer");
+				.setHelp(tableViewer.getControl(), "ProcessViewer.viewer");
 		createActions();
 		hookContextMenu();
-		
-		tableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
-			@Override
-			public void selectionChanged(SelectionChangedEvent event) {
-				IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
-				ProcessInfo firstElement = (ProcessInfo)selection.getFirstElement();
-				if( firstElement != null ){
-					System.out.println("Selected process: " + firstElement.name);
-					chartsPanel.resetCurrentProcess();
-					currentProcess = firstElement;
-				}
-			}
-		});
+
+		tableViewer
+				.addSelectionChangedListener(new ISelectionChangedListener() {
+					@Override
+					public void selectionChanged(SelectionChangedEvent event) {
+						IStructuredSelection selection = (IStructuredSelection) tableViewer
+								.getSelection();
+						ProcessInfo firstElement = (ProcessInfo) selection
+								.getFirstElement();
+						if (firstElement != null) {
+							System.out.println("Selected process: "
+									+ firstElement.name);
+							chartsPanel.resetCurrentProcess();
+							currentProcess = firstElement;
+						}
+					}
+				});
 	}
 
 	private SelectionAdapter getSelectionAdapter(final TableColumn column,
@@ -316,8 +320,8 @@ public class ProcessView extends ViewPart {
 								.getElement();
 						Runtime.getRuntime().exec(
 								System.getenv("windir")
-								+ "\\system32\\taskkill.exe /F /PID "
-								+ process.pid);
+										+ "\\system32\\taskkill.exe /F /PID "
+										+ process.pid);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
