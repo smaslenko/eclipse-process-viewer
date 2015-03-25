@@ -134,10 +134,12 @@ public class DoubleChartComposite extends Composite {
 
 	public void updateProcessList() {
 		
-		System.out.println("Memory in percent: "+ SystemUtils.getUsagesMemoryInPercent() +" %");
+		System.out.println("Memory in percent : "+ SystemUtils.getUsagesMemoryInPercent() +" %");
+		System.out.println("CPU in percent    : "+ SystemUtils.getProcessCpuLoad() +" %");
+		System.out.println("CPU in percent    : "+ SystemUtils.getProcessCpuLoad2() +" %");
 		
 		if (index < HISTORY_SIZE) {
-			cpuHistory[index] = SystemUtils.getProcessCpuLoad();
+			cpuHistory[index] = SystemUtils.getProcessCpuLoad2();
 			memoryHistory[index] = SystemUtils.getUsagesMemoryInPercent();
 			index++;
 
@@ -146,7 +148,7 @@ public class DoubleChartComposite extends Composite {
 				cpuHistory[i] = cpuHistory[i + 1];
 				memoryHistory[i] = memoryHistory[i + 1];
 			}
-			cpuHistory[HISTORY_SIZE - 1] = SystemUtils.getProcessCpuLoad();
+			cpuHistory[HISTORY_SIZE - 1] = SystemUtils.getProcessCpuLoad2();
 			memoryHistory[HISTORY_SIZE - 1] = SystemUtils.getUsagesMemoryInPercent();
 		}
 
@@ -178,7 +180,8 @@ public class DoubleChartComposite extends Composite {
 	
 	public void updateProcessList(ProcessInfo process) {
 		this.currentProcess = process;
-	
+		
+		System.out.println();
 		if (indexSingle < HISTORY_SIZE) {
 			cpuHistorySingle[indexSingle] = 1.0 * process.cpu* 100 /ProcessView.totalCpu;
 			memoryHistorySingle[indexSingle] = currentProcess.memory;
