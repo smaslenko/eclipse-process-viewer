@@ -30,10 +30,11 @@ public class DoubleChartComposite extends Composite {
 	final static Color COLOR_BLACK = new Color(Display.getDefault(), 0, 0, 0);
 	final static Color COLOR_GREEN = new Color(Display.getDefault(), 0, 200, 0);
 	final static int HISTORY_SIZE = 20;
+	final static int initIndex = 2;
 	private Chart memoryChart;
 	private Chart cpuChart;
-	private int index;
-	private int indexSingle;
+	private int index = initIndex;
+	private int indexSingle = initIndex;
 	private ArrayList<ProcessInfo> processList;
 	private ProcessInfo currentProcess;
 	private double[] cpuHistory;
@@ -46,9 +47,26 @@ public class DoubleChartComposite extends Composite {
 	public DoubleChartComposite(Composite parent, int style, ChartType type) {
 		super(parent, style);
 		setLayout(new RowLayout(SWT.NONE));
-
+			
 		this.type = type;
-
+		
+		cpuHistory = new double[HISTORY_SIZE];
+		memoryHistory = new double[HISTORY_SIZE];
+		cpuHistorySingle = new double[HISTORY_SIZE];
+		memoryHistorySingle = new double[HISTORY_SIZE];
+		
+		cpuHistory[0] = 0;
+		cpuHistory[1] = 100;
+		cpuHistorySingle[0] = 0;
+		cpuHistorySingle[1] = 100;
+		
+		double mb = 1024 * 1024;
+		
+		memoryHistory[0] = 0;
+		memoryHistory[1] = SystemUtils.getMaxRAMAmount() / mb;
+		memoryHistorySingle[0] = 0;
+		memoryHistorySingle[1] = SystemUtils.getMaxRAMAmount() / mb;
+		
 		cpuChart = new Chart(this, SWT.NONE);
 		cpuChart.setLayoutData(new RowData(450, 150));
 		cpuChart.getTitle().setText("Cpu Usage History");
@@ -64,10 +82,7 @@ public class DoubleChartComposite extends Composite {
 		setupAxises(cpuChart);
 		setupAxises(memoryChart);
 
-		cpuHistory = new double[HISTORY_SIZE];
-		memoryHistory = new double[HISTORY_SIZE];
-		cpuHistorySingle = new double[HISTORY_SIZE];
-		memoryHistorySingle = new double[HISTORY_SIZE];
+		
 	}
 	
 	
@@ -91,10 +106,13 @@ public class DoubleChartComposite extends Composite {
 		IAxis axisY = set.getYAxis(0);
 		if(chart.getTitle().getText().equals("Cpu Usage History")){
 			axisY.setRange(new Range(0, 100));
+		
 		}else{
 			double mb = 1024 * 1024;
 			axisY.setRange(new Range(0, (SystemUtils.getMaxRAMAmount() / mb) ));
 			axisY.getTick().setFormat(new DecimalFormat("#####.# Mb"));
+			
+			
 		}
 		axisY.zoomOut();
 		
@@ -128,18 +146,18 @@ public class DoubleChartComposite extends Composite {
 			index++;
 
 		} else {
-			for (int i = 0; i < HISTORY_SIZE - 1; i++) {
+			for (int i = initIndex; i < HISTORY_SIZE - 1; i++) {
 				cpuHistory[i] = cpuHistory[i + 1];
 				memoryHistory[i] = memoryHistory[i + 1];
 			}
 			cpuHistory[HISTORY_SIZE - 1] = SystemUtils.getProcessCpuLoad2();
 			memoryHistory[HISTORY_SIZE - 1] = SystemUtils.getUsagesMemoryInPercent();
 		}
-
+		
 		String cpuSeriesId = "cpu load";
 		String memorySeriesId = "memory load";
 
-		if (index == 1) {
+		if (index == initIndex + 1) {
 			setupLines(cpuSeriesId, memorySeriesId);
 		}
 		resetSeries(cpuSeriesId, memorySeriesId);
@@ -169,7 +187,7 @@ public class DoubleChartComposite extends Composite {
 			indexSingle++;
 
 		} else {
-			for (int i = 0; i < HISTORY_SIZE - 1; i++) {
+			for (int i = initIndex; i < HISTORY_SIZE - 1; i++) {
 				cpuHistorySingle[i] = cpuHistorySingle[i + 1];
 				memoryHistorySingle[i] = memoryHistorySingle[i + 1];
 			}
@@ -180,7 +198,7 @@ public class DoubleChartComposite extends Composite {
 		String cpuSeriesId = "cpu load";
 		String memorySeriesId = "memory load";
 
-		if (indexSingle == 1) {
+		if (indexSingle == initIndex + 1) {
 			setupLines(cpuSeriesId, memorySeriesId);
 		}
 		resetSeries(cpuSeriesId, memorySeriesId);
@@ -196,9 +214,17 @@ public class DoubleChartComposite extends Composite {
 	}
 	
 	public void resetProcess(){
-		indexSingle = 0;
+		indexSingle = initIndex;
 		cpuHistorySingle = new double[HISTORY_SIZE];
 		memoryHistorySingle = new double[HISTORY_SIZE];
+		
+		cpuHistorySingle[0] = 0;
+		cpuHistorySingle[1] = 100;
+		
+		double mb = 1024 * 1024;
+		
+		memoryHistorySingle[0] = 0;
+		memoryHistorySingle[1] = SystemUtils.getMaxRAMAmount() / mb;			
 	}
 
 	private void setupLines(String cpuId, String memoryId) {
