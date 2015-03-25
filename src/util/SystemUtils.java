@@ -43,7 +43,7 @@ public class SystemUtils {
 	
 	public static double getProcessCpuLoad2() {
 		com.sun.management.OperatingSystemMXBean bean = (com.sun.management.OperatingSystemMXBean) java.lang.management.ManagementFactory.getOperatingSystemMXBean();
-		return round(bean.getSystemCpuLoad(), 2);
+		return round(bean.getSystemCpuLoad(), 2)*100;
 	}
 
 	// RESTRICTED method. Follow this link to solve trouble
@@ -67,7 +67,7 @@ public class SystemUtils {
 		double maxRam = getMaxRAMAmount() / mb;
 		double result = ((100 * memoryUsed / maxRam) / 100);
 		result = round(result, 2);
-		return result;
+		return memoryUsed;
 	}
 
 	public static double round(double value, int places) {
