@@ -40,6 +40,14 @@ public class ChartsPanelComposite extends Composite {
 
 	public void updateProcessList(ArrayList<ProcessInfo> processList) {
 		doubleGraphCompositeAll.updateProcessList(processList);
-		doubleGraphCompositeSingle.updateProcessList(processList);
+//		doubleGraphCompositeSingle.updateProcessList(processList);
+	}
+	
+	public void updateCurrentProcess(ProcessInfo process){
+		doubleGraphCompositeSingle.updateProcessList(process);
+	}
+	
+	public void resetCurrentProcess(){
+		doubleGraphCompositeSingle.resetProcess();
 	}
 }

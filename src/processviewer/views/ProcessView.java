@@ -15,9 +15,12 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
@@ -45,9 +48,9 @@ public class ProcessView extends ViewPart {
 	private Action killAction;
 	private MouseEvent lastEvent;
 	private ProcessesTableComparator comparator;
-
+	private ProcessInfo currentProcess;
 	private ArrayList<ProcessInfo> processList;
-	private int totalCpu = 0;
+	public static int totalCpu = 0;
 	private Timer updateTimer;
 
 	class ProcessInfo {
@@ -160,6 +163,9 @@ public class ProcessView extends ViewPart {
 			public void run() {
 				tableViewer.refresh();
 				chartsPanel.updateProcessList(processList);
+				if(currentProcess != null){
+					chartsPanel.updateCurrentProcess(currentProcess);
+				}
 			}
 		});
 
@@ -231,6 +237,19 @@ public class ProcessView extends ViewPart {
 		.setHelp(tableViewer.getControl(), "ProcessViewer.viewer");
 		createActions();
 		hookContextMenu();
+		
+		tableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+			@Override
+			public void selectionChanged(SelectionChangedEvent event) {
+				IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
+				ProcessInfo firstElement = (ProcessInfo)selection.getFirstElement();
+				if( firstElement != null ){
+					System.out.println("Selected process: " + firstElement.name);
+					chartsPanel.resetCurrentProcess();
+					currentProcess = firstElement;
+				}
+			}
+		});
 	}
 
 	private SelectionAdapter getSelectionAdapter(final TableColumn column,
