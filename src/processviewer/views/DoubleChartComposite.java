@@ -32,6 +32,7 @@ import org.swtchart.Range;
 import org.swtchart.internal.axis.AxisSet;
 
 import processviewer.views.ProcessView.ProcessInfo;
+import util.SystemUtils;
 
 public class DoubleChartComposite extends Composite {
 	public enum ChartType {
@@ -79,72 +80,8 @@ public class DoubleChartComposite extends Composite {
 		memoryHistory = new double[HISTORY_SIZE];
 		cpuHistorySingle = new double[HISTORY_SIZE];
 		memoryHistorySingle = new double[HISTORY_SIZE];
-		// for (int i = 0; i < HISTORY_SIZE; i++) {
-		// processHistory[i] = -1;
-		// }
-	}
-
-	public static double getProcessCpuLoad() {
-		AttributeList list = null;
-		Double value = 0.0;
-
-		try {
-			MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-			ObjectName name = ObjectName
-					.getInstance("java.lang:type=OperatingSystem");
-			list = mbs.getAttributes(name, new String[] { "ProcessCpuLoad" });
-
-			if (list.isEmpty()) {
-				return 0;
-			}
-
-			Attribute att = (Attribute) list.get(0);
-			value = (Double) att.getValue();
-			if (value == -1.0) {
-				return 0;
-			} // usually takes a couple of seconds before we get real values
-
-		} catch (MalformedObjectNameException | InstanceNotFoundException
-				| ReflectionException e) {
-			e.printStackTrace();
-		}
-
-		return ((int) (value * 1000) / 10.0); // returns a percentage value with
-												// 1 decimal point precision
-	}
-
-	// RESTRICTED method. Follow this link to solve trouble
-	// http://stackoverflow.com/questions/860187/access-restriction-on-class-due-to-restriction-on-required-library-rt-jar
-	public long getMaxRAMAmount() {
-		com.sun.management.OperatingSystemMXBean bean = (com.sun.management.OperatingSystemMXBean) java.lang.management.ManagementFactory.getOperatingSystemMXBean();
-		long maxRam =  bean.getTotalPhysicalMemorySize();
-		return maxRam;
 	}
 	
-	public long getFreeRAMAmount() {
-		com.sun.management.OperatingSystemMXBean bean = (com.sun.management.OperatingSystemMXBean) java.lang.management.ManagementFactory.getOperatingSystemMXBean();
-		long freeRam =  bean.getFreePhysicalMemorySize();
-		return freeRam;
-	}
-	
-	public double getUsagesMemoryInPercent() {
-		double mb = 1024*1024; 
-		
-		double memoryUsed = (getMaxRAMAmount() - getFreeRAMAmount()) / mb;
-		double maxRam = getMaxRAMAmount() / mb;
-		double result =  ( ( 100 * memoryUsed / maxRam  ) / 100 );
-		result = round(result, 2);
-		return result;
-	}
-	
-	public static double round(double value, int places) {
-	    if (places < 0) throw new IllegalArgumentException();
-
-	    long factor = (long) Math.pow(10, places);
-	    value = value * factor;
-	    long tmp = Math.round(value);
-	    return (double) tmp / factor;
-	}
 	
 	public Chart getMemoryChart() {
 		return memoryChart;
@@ -157,7 +94,6 @@ public class DoubleChartComposite extends Composite {
 	private void adjustColors(Chart chart) {
 		chart.setBackground(COLOR_BLACK);
 		chart.setBackgroundInPlotArea(COLOR_BLACK);
-
 	}
 
 	private void setupAxises(Chart chart) {
@@ -169,8 +105,9 @@ public class DoubleChartComposite extends Composite {
 			axisY.setRange(new Range(0, 100));
 		}else{
 			double mb = 1024 * 1024;
-			axisY.setRange(new Range(0, (getMaxRAMAmount() / mb) ));
+			axisY.setRange(new Range(0, (SystemUtils.getMaxRAMAmount() / mb) ));
 		}
+		axisY.zoomOut();
 		
 		IAxisTick xTick = set.getXAxis(0).getTick();
 		xTick.setVisible(false);
@@ -195,21 +132,13 @@ public class DoubleChartComposite extends Composite {
 //		chart.getAxisSet().getYAxis(0).getTitle().setText("Percent");
 	}
 
-	public void updateProcessList(ArrayList<ProcessInfo> processList) {
-		this.processList = processList;
-
+	public void updateProcessList() {
 		
-		double memoryLoad = 0;
-
-		for (ProcessInfo processInfo : processList) {
-			memoryLoad += processInfo.memory;
-		}
-		
-		System.out.println("Memory in percent: "+ getUsagesMemoryInPercent() +" %");
+		System.out.println("Memory in percent: "+ SystemUtils.getUsagesMemoryInPercent() +" %");
 		
 		if (index < HISTORY_SIZE) {
-			cpuHistory[index] = getProcessCpuLoad();
-			memoryHistory[index] = getUsagesMemoryInPercent();
+			cpuHistory[index] = SystemUtils.getProcessCpuLoad();
+			memoryHistory[index] = SystemUtils.getUsagesMemoryInPercent();
 			index++;
 
 		} else {
@@ -217,11 +146,9 @@ public class DoubleChartComposite extends Composite {
 				cpuHistory[i] = cpuHistory[i + 1];
 				memoryHistory[i] = memoryHistory[i + 1];
 			}
-			cpuHistory[HISTORY_SIZE - 1] = getProcessCpuLoad();
-			memoryHistory[HISTORY_SIZE - 1] = getUsagesMemoryInPercent();
+			cpuHistory[HISTORY_SIZE - 1] = SystemUtils.getProcessCpuLoad();
+			memoryHistory[HISTORY_SIZE - 1] = SystemUtils.getUsagesMemoryInPercent();
 		}
-
-		memoryLoad = 0;
 
 		String cpuSeriesId = "cpu load";
 		String memorySeriesId = "memory load";
@@ -232,7 +159,6 @@ public class DoubleChartComposite extends Composite {
 		resetSeries(cpuSeriesId, memorySeriesId);
 		setupLines(cpuSeriesId, memorySeriesId);
 
-		System.out.println();
 
 //		for (int i = 0; i < HISTORY_SIZE; i++) {
 //			System.out.println("cpu load = " + cpuHistory[i]);
@@ -244,19 +170,10 @@ public class DoubleChartComposite extends Composite {
 		
 		double mb = 1024 * 1024; 
 		double gb = 1024 * mb;
-		System.out.println("Total memory      : " + getMaxRAMAmount() / mb +" Mb");
-		System.out.println("Total memory Free : " + ( getFreeRAMAmount() / mb ) + " Mb");
-		System.out.println("Total memory Usage: " + ( (getMaxRAMAmount() - getFreeRAMAmount()) / mb ) + " Mb");
-		switch (type) {
-		case ALL:
+		System.out.println("Total memory      : " + SystemUtils.getMaxRAMAmount() / mb +" Mb");
+		System.out.println("Total memory Free : " + ( SystemUtils.getFreeRAMAmount() / mb ) + " Mb");
+		System.out.println("Total memory Usage: " + ( (SystemUtils.getMaxRAMAmount() - SystemUtils.getFreeRAMAmount()) / mb ) + " Mb");
 
-			break;
-		case SINGLE:
-
-			break;
-		default:
-			break;
-		}
 	}
 	
 	public void updateProcessList(ProcessInfo process) {
