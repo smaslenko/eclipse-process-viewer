@@ -1,17 +1,6 @@
 package processviewer.views;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.OperatingSystemMXBean;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
-
-import javax.management.Attribute;
-import javax.management.AttributeList;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import javax.management.ReflectionException;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -23,11 +12,9 @@ import org.swtchart.Chart;
 import org.swtchart.IAxis;
 import org.swtchart.IAxisTick;
 import org.swtchart.IGrid;
-import org.swtchart.ILegend;
 import org.swtchart.ILineSeries;
 import org.swtchart.ILineSeries.PlotSymbolType;
 import org.swtchart.ISeries.SeriesType;
-import org.swtchart.LineStyle;
 import org.swtchart.Range;
 import org.swtchart.internal.axis.AxisSet;
 
@@ -127,9 +114,6 @@ public class DoubleChartComposite extends Composite {
 		set.getXAxis(0).getTitle().setVisible(false);
 		set.getYAxis(0).getTitle().setVisible(false);
 		
-//		chart.getLegend().setPosition(SWT.TOP);
-//		chart.getAxisSet().getXAxis(0).getTitle().setText("Time (10 seconds)");
-//		chart.getAxisSet().getYAxis(0).getTitle().setText("Percent");
 	}
 
 	public void updateProcessList() {
@@ -199,18 +183,6 @@ public class DoubleChartComposite extends Composite {
 		resetSeries(cpuSeriesId, memorySeriesId);
 		setupLines(cpuSeriesId, memorySeriesId);
 
-		
-//		System.out.println("CPU Single process : "  + this.currentProcess.name);
-//		System.out.println("-------------------------------------");
-//		for (int i = 0; i < HISTORY_SIZE; i++) {
-//			System.out.println("cpu load = " + cpuHistorySingle[i]);
-//		}
-//		
-//		System.out.println("MEMORY Single process : "  + this.currentProcess.name);
-//		
-//		for (int i = 0; i < HISTORY_SIZE; i++) {
-//			System.out.println("memory load = " + memoryHistorySingle[i]);
-//		}
 	}
 	
 	public void setProcessName(String name){
@@ -259,8 +231,6 @@ public class DoubleChartComposite extends Composite {
 		
 		cpuChart.redraw();
 		memoryChart.redraw();
-//		cpuChart.getAxisSet().zoomOut();
-//		memoryChart.getAxisSet().zoomOut();
 	
 	}
 
