@@ -233,23 +233,19 @@ public class ProcessView extends ViewPart {
 		columnCpu.setWidth(125);
 		columnCpu.addSelectionListener(getSelectionAdapter(columnCpu, 2));
 
-		PlatformUI.getWorkbench().getHelpSystem()
-				.setHelp(tableViewer.getControl(), "ProcessViewer.viewer");
+		PlatformUI.getWorkbench().getHelpSystem().setHelp(tableViewer.getControl(), "ProcessViewer.viewer");
 		createActions();
 		hookContextMenu();
 
-		tableViewer
-				.addSelectionChangedListener(new ISelectionChangedListener() {
+		tableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 					@Override
 					public void selectionChanged(SelectionChangedEvent event) {
-						IStructuredSelection selection = (IStructuredSelection) tableViewer
-								.getSelection();
-						ProcessInfo firstElement = (ProcessInfo) selection
-								.getFirstElement();
+						IStructuredSelection selection = (IStructuredSelection) tableViewer.getSelection();
+						ProcessInfo firstElement = (ProcessInfo) selection.getFirstElement();
 						if (firstElement != null) {
-							System.out.println("Selected process: "
-									+ firstElement.name);
+							System.out.println("Selected process: "+ firstElement.name);
 							chartsPanel.resetCurrentProcess();
+							chartsPanel.setCureentProcessName(firstElement.name);
 							currentProcess = firstElement;
 						}
 					}

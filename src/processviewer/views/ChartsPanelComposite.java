@@ -29,6 +29,10 @@ public class ChartsPanelComposite extends Composite {
 				ChartType.SINGLE);
 
 	}
+	
+	public void setCureentProcessName(String name){
+		doubleGraphCompositeSingle.setProcessName(name);
+	}
 
 	public DoubleChartComposite getDoubleGraphCompositeAll() {
 		return doubleGraphCompositeAll;

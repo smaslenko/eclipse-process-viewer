@@ -111,11 +111,11 @@ public class DoubleChartComposite extends Composite {
 		
 		IAxisTick xTick = set.getXAxis(0).getTick();
 		xTick.setVisible(false);
-//		xTick.setTickMarkStepHint(25);
+		xTick.setTickMarkStepHint(25);
 		
 		IAxisTick yTick = set.getYAxis(0).getTick();
 		yTick.setVisible(true);
-//		yTick.setTickMarkStepHint(25);
+		yTick.setTickMarkStepHint(25);
 		yTick.setForeground(COLOR_GREEN);
 
 		IGrid xGrid = set.getXAxis(0).getGrid();
@@ -134,8 +134,6 @@ public class DoubleChartComposite extends Composite {
 
 	public void updateProcessList() {
 		
-//		System.out.println("Memory in percent : "+ SystemUtils.getUsagesMemoryInPercent() +" %");
-//		System.out.println("CPU in percent    : "+ SystemUtils.getProcessCpuLoad() +" %");
 		System.out.println("CPU in percent    : "+ SystemUtils.getProcessCpuLoad2() +" %");
 		
 		if (index < HISTORY_SIZE) {
@@ -215,6 +213,13 @@ public class DoubleChartComposite extends Composite {
 //		}
 	}
 	
+	public void setProcessName(String name){
+		cpuChart.getTitle().setText(name + " Cpu Usage History ");
+		cpuChart.redraw();
+		memoryChart.getTitle().setText(name + " Memory Usage History");
+		memoryChart.redraw();
+	}
+	
 	public void resetProcess(){
 		indexSingle = 0;
 		cpuHistorySingle = new double[HISTORY_SIZE];
@@ -223,8 +228,7 @@ public class DoubleChartComposite extends Composite {
 
 	private void setupLines(String cpuId, String memoryId) {
 
-		ILineSeries lineSeries1 = (ILineSeries) cpuChart.getSeriesSet()
-				.createSeries(SeriesType.LINE, cpuId);
+		ILineSeries lineSeries1 = (ILineSeries) cpuChart.getSeriesSet().createSeries(SeriesType.LINE, cpuId);
 		if(type == ChartType.SINGLE){
 			lineSeries1.setYSeries(cpuHistorySingle);
 		}else{
@@ -253,6 +257,8 @@ public class DoubleChartComposite extends Composite {
 		cpuChart.getAxisSet().adjustRange();
 		memoryChart.getAxisSet().adjustRange();
 		
+		cpuChart.redraw();
+		memoryChart.redraw();
 //		cpuChart.getAxisSet().zoomOut();
 //		memoryChart.getAxisSet().zoomOut();
 	
