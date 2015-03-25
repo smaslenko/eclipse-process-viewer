@@ -1,5 +1,6 @@
 package processviewer.views;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 import org.eclipse.swt.SWT;
@@ -93,6 +94,7 @@ public class DoubleChartComposite extends Composite {
 		}else{
 			double mb = 1024 * 1024;
 			axisY.setRange(new Range(0, (SystemUtils.getMaxRAMAmount() / mb) ));
+			axisY.getTick().setFormat(new DecimalFormat("#####.# Mb"));
 		}
 		axisY.zoomOut();
 		
@@ -104,7 +106,7 @@ public class DoubleChartComposite extends Composite {
 		yTick.setVisible(true);
 		yTick.setTickMarkStepHint(25);
 		yTick.setForeground(COLOR_GREEN);
-
+	
 		IGrid xGrid = set.getXAxis(0).getGrid();
 		IGrid yGrid = set.getYAxis(0).getGrid();
 
@@ -160,9 +162,10 @@ public class DoubleChartComposite extends Composite {
 		this.currentProcess = process;
 		
 		System.out.println();
+		double currentProcessMemory = process.memory / 1024;
 		if (indexSingle < HISTORY_SIZE) {
 			cpuHistorySingle[indexSingle] = 1.0 * process.cpu* 100 /ProcessView.totalCpu;
-			memoryHistorySingle[indexSingle] = currentProcess.memory;
+			memoryHistorySingle[indexSingle] = currentProcessMemory;
 			indexSingle++;
 
 		} else {
@@ -171,7 +174,7 @@ public class DoubleChartComposite extends Composite {
 				memoryHistorySingle[i] = memoryHistorySingle[i + 1];
 			}
 			cpuHistorySingle[HISTORY_SIZE - 1] = 1.0 * process.cpu* 100 /ProcessView.totalCpu;
-			memoryHistorySingle[HISTORY_SIZE - 1] = process.memory;
+			memoryHistorySingle[HISTORY_SIZE - 1] = currentProcessMemory;
 		}
 
 		String cpuSeriesId = "cpu load";
