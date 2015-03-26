@@ -8,8 +8,11 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
@@ -186,17 +189,22 @@ public class ProcessView extends ViewPart {
 
 	private double cpuMemoryToDouble(String memoryOrig) {
 		String memory = memoryOrig.substring(0, memoryOrig.indexOf(" "));
-		NumberFormat format = NumberFormat.getInstance(Locale.getDefault());
-		Number number;
-		try {
-			number = format.parse(memory);
-			return number.doubleValue();
-		} catch (ParseException e) {
-			e.printStackTrace();
+		String[] memorySplitted = splitOnSpace(memory);
+		double res;
+		if(memorySplitted.length == 1) {
+			res = Double.parseDouble(memory) * 1000;
+		} else {
+			int thousand = Integer.parseInt(memorySplitted[0]);
+			int rest = Integer.parseInt(memorySplitted[1]);
+			res =  thousand * 1000 + rest;
 		}
-		return 0;
+		return res;
 	}
-
+	
+	private String[] splitOnSpace(String s) {
+		return s.split("\\D+");
+	}
+	
 	@Override
 	public void createPartControl(Composite parent) {
 		getViewSite().getShell().setMaximized(true);
